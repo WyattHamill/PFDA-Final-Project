@@ -22,15 +22,6 @@ As a digital artist I have used media encoding and converting websites thousands
 - UI Elements for all features
     - UI Screen, with button to choose the folder, choose what operation to do, and rename the output
 
-## Minimum Viable Product
-- PNG Sequence to MP4
-- PNG Sequence to GIF
-- UI Elements
-
-## Challenges
-- UI will be a big challenge. I will need to implement ways to open file navigation and choose files.
-- I will need to figure out how to type on pygame screen to rename the file output
-
 ## Outcomes
 Ideal Outcome:
 - Ideal outcome is to have a working visual program that can encode MP4 and GIF, convert image files, and reduce image file size
