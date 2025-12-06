@@ -54,7 +54,6 @@ def build_mp4(png_files, fps, output_path):
 def create_mp4():
     folder, fps, file_name = ask_for_inputs()
     if not folder:
-        print("folder not working")
         return
 
     png_files = load_png_sequence(folder)
