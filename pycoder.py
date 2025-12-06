@@ -1,5 +1,6 @@
 import os
 import glob
+import sys
 from moviepy import ImageSequenceClip
 
 # Make function that will turn a png seq into mp4
@@ -52,7 +53,17 @@ def create_mp4():
 
 
 def main():
-    create_mp4()
+    if len(sys.argv) < 2:
+        print("Usage: python pycoder.py <command>")
+        print("Commands:")
+        print("   create_mp4   - Turn a PNG sequence into an MP4 video")
+        return
+    command = sys.argv[1]
+    if command == "create_mp4":
+        create_mp4()
+    else:
+        print("Unknown command:", command)
+        print("Available commands: create_mp4")
 
 if __name__ == "__main__":
     main()
