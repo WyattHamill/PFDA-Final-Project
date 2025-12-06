@@ -1,4 +1,5 @@
 import os
+import glob
 from moviepy import ImageSequenceClip
 
 # Make function that will turn a png seq into mp4
@@ -23,6 +24,31 @@ def create_mp4():
                 print("FPS must be a positive number.")
         except:
             print("Please enter a valid whole number.")
+
+    file_name = input("Set MP4 file name: ").strip()
+    if file_name == "":
+        print("Error: File name cannot be empty.")
+        return
+    if not file_name.lower().endswith(".mp4"):
+        file_name = file_name + ".mp4"
+
+    png_files = sorted(glob.glob(os.path.join(folder, "*.png")))
+
+    if len(png_files) == 0:
+        print("No PNG files found in that folder.")
+        return
+
+    print("Found", len(png_files), "PNG files.")
+    print("Pycoder - Creating your MP4...")
+
+    clip = ImageSequenceClip(png_files, fps=fps)
+    output_path = os.path.join(folder, file_name)
+    clip.write_videofile(output_path, codec="libx264")
+
+    print("\n------------------------------")
+    print("Pycoder - PNG sequence to MP4 successfully created!")
+    print("Saved as:", output_path)
+    print("------------------------------\n")
 
 
 def main():
