@@ -2,6 +2,7 @@ import os
 import glob
 import sys
 from moviepy import ImageSequenceClip
+import OpenImageIO as oiio
 
 def ask_for_inputs():
     print("=== Pycoder: PNG Sequence to MP4 Converter ===")
@@ -64,18 +65,103 @@ def create_mp4():
     build_mp4(png_files, fps, output_path)
 
 
+def detect_input_type(path):
+    if os.path.isdir(path):
+        pngs = glob.glob(os.path.join(path, "*.png"))
+        exrs = glob.glob(os.path.join(path, "*.exr"))
+        if len(pngs) > 0 or len(exrs) > 0:
+            return "sequence"
+    else:
+        if path.lower().endswith(".png") or path.lower().endswith(".exr"):
+            return "single_file"
+
+def convert_single_image(input_file, new_ext):
+    print("Pycoder - Converting your image...")
+    img_input = oiio.ImageInput.open(input_file)
+    if not img_input:
+        print("Could not read:", input_file)
+        return
+    
+    spec = img_input.spec()
+    pixels = img_input.read_image()
+    img_input.close()
+    output_file = os.path.splitext(input_file)[0] + "." + new_ext
+    out = oiio.ImageOutput.create(output_file)
+    if not out:
+        print("Could not create output file:", output_file)
+        return
+    
+    out.open(output_file, spec)
+    out.write_image(pixels)
+    out.close()
+    print("Saved:", output_file)
+
+
+def convert_image_sequence(folder, new_ext):
+    print("Pycoder - Converting your image sequence...")
+    files = sorted(glob.glob(os.path.join(folder, "*.png"))) + \
+            sorted(glob.glob(os.path.join(folder, "*.exr")))
+    if len(files) == 0:
+        print("No PNG or EXR images found to convert.")
+        return
+    out_folder = os.path.join(folder, "pycoder_" + new_ext + "_conversion")
+    if not os.path.exists(out_folder):
+        os.makedirs(out_folder)
+    for sequence in files:
+        img_input = oiio.ImageInput.open(sequence)
+        spec = img_input.spec()
+        pixels = img_input.read_image()
+        img_input.close()
+        base = os.path.splitext(os.path.basename(sequence))[0]
+        out_path = os.path.join(out_folder, base + "." + new_ext)
+        out = oiio.ImageOutput.create(out_path)
+        if not out:
+            print("Failed to write:", out_path)
+            continue
+
+        out.open(out_path, spec)
+        out.write_image(pixels)
+        out.close()
+
+        print("Converted:", base, "->", out_path)
+
+    print("\n------------------------------")
+    print("Pycoder - Image conversion successful!")
+    print("Saved as:", out_folder)
+    print("------------------------------\n")
+
+def img_convert():
+    print("=== Pycoder - Image Format Converter ===")
+
+    path = input("Enter a file or folder path to convert: ").strip()
+    input_type = detect_input_type(path)
+    new_ext = input("Set converted file format:").strip().lower()
+    print(new_ext)
+    if new_ext != "png" and new_ext != "exr":
+        print("Invalid choice. File format must be png or exr.")
+        return
+    
+    if input_type == "single_file":
+        convert_single_image(path, new_ext)
+    elif input_type == "sequence":
+        convert_image_sequence(path, new_ext)
+
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: python pycoder.py <command>")
         print("Commands:")
         print("   create_mp4   - Turn a PNG sequence into an MP4 video")
+        print("   img_convert  - Convert PNG <-> EXR file or sequence")
         return
     command = sys.argv[1]
     if command == "create_mp4":
         create_mp4()
+    elif command == "img_convert":
+        img_convert()
     else:
         print("Unknown command:", command)
-        print("Available commands: create_mp4")
+        print("Available commands: create_mp4, img_convert")
 
 
 if __name__ == "__main__":
