@@ -71,31 +71,37 @@ def detect_input_type(path):
         exrs = glob.glob(os.path.join(path, "*.exr"))
         if len(pngs) > 0 or len(exrs) > 0:
             return "sequence"
+        else:
+            return "empty_folder"
     else:
         if path.lower().endswith(".png") or path.lower().endswith(".exr"):
             return "single_file"
+        else:
+            return "unknown_file"
 
 def convert_single_image(input_file, new_ext):
-    print("Pycoder - Converting your image...")
-    img_input = oiio.ImageInput.open(input_file)
-    if not img_input:
-        print("Could not read:", input_file)
-        return
-    
-    spec = img_input.spec()
-    pixels = img_input.read_image()
-    img_input.close()
-    output_file = os.path.splitext(input_file)[0] + "." + new_ext
-    out = oiio.ImageOutput.create(output_file)
-    if not out:
-        print("Could not create output file:", output_file)
-        return
-    
-    out.open(output_file, spec)
-    out.write_image(pixels)
-    out.close()
-    print("Saved:", output_file)
+    print("Converting single image...")
+    try:
+        img_input = oiio.ImageInput.open(input_file)
+        if not img_input:
+            print("Could not read:", input_file)
+            return
+        spec = img_input.spec()
+        pixels = img_input.read_image()
+        img_input.close()
+        output_file = os.path.splitext(input_file)[0] + "." + new_ext
+        out = oiio.ImageOutput.create(output_file)
+        if not out:
+            print("Could not create output file:", output_file)
+            return
+        out.open(output_file, spec)
+        out.write_image(pixels)
+        out.close()
+        print("Saved:", output_file)
 
+    except Exception as e:
+        print("Error converting image:", e)
+    
 
 def convert_image_sequence(folder, new_ext):
     print("Pycoder - Converting your image sequence...")
@@ -108,22 +114,29 @@ def convert_image_sequence(folder, new_ext):
     if not os.path.exists(out_folder):
         os.makedirs(out_folder)
     for sequence in files:
-        img_input = oiio.ImageInput.open(sequence)
-        spec = img_input.spec()
-        pixels = img_input.read_image()
-        img_input.close()
-        base = os.path.splitext(os.path.basename(sequence))[0]
-        out_path = os.path.join(out_folder, base + "." + new_ext)
-        out = oiio.ImageOutput.create(out_path)
-        if not out:
-            print("Failed to write:", out_path)
-            continue
+        try:
+            img_input = oiio.ImageInput.open(sequence)
+            if not img_input:
+                print("Skipping, couldn't read:", sequence)
+                continue
+            spec = img_input.spec()
+            pixels = img_input.read_image()
+            img_input.close()
+            base = os.path.splitext(os.path.basename(sequence))[0]
+            out_path = os.path.join(out_folder, base + "." + new_ext)
+            out = oiio.ImageOutput.create(out_path)
+            if not out:
+                print("Failed to write:", out_path)
+                continue
 
-        out.open(out_path, spec)
-        out.write_image(pixels)
-        out.close()
+            out.open(out_path, spec)
+            out.write_image(pixels)
+            out.close()
 
-        print("Converted:", base, "->", out_path)
+            print("Converted:", sequence, "->", out_path)
+
+        except Exception as e:
+            print("Error converting", sequence, "-", e)
 
     print("\n------------------------------")
     print("Pycoder - Image conversion successful!")
@@ -157,7 +170,7 @@ def main():
     command = sys.argv[1]
     if command == "create_mp4":
         create_mp4()
-    elif command == "img_convert":
+    elif command == "img_convert" or "image_convert":
         img_convert()
     else:
         print("Unknown command:", command)
