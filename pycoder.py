@@ -3,9 +3,35 @@ import glob
 import sys
 from moviepy import ImageSequenceClip
 import OpenImageIO as oiio
+import pygame
+
+
+def file_select():
+    pygame.init()
+    screen = pygame.display.set_mode((500, 300))
+    pygame.display.set_caption("Select File or Folder")
+    font = pygame.font.SysFont("Arial", 28)
+    text = font.render("Select File or Folder", True, (255, 255, 255))
+    folder_rect = pygame.Rect(200, 140, 100, 70)
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                    running = False
+        screen.fill((40, 40, 40))
+        screen.blit(text, (130, 60))
+        pygame.draw.rect(screen, (255, 200, 0), folder_rect, border_radius=8)
+        pygame.draw.rect(screen, (180, 150, 0), (folder_rect.x, folder_rect.y - 20, 60, 20), border_radius=5)
+        pygame.display.flip()
+    pygame.quit()
+
 
 def ask_for_inputs():
     print("=== Pycoder: Image Sequence to MP4 Converter ===")
+    file_select()
 
     folder = input("Enter the folder path of the image sequence: ").strip()
     if not os.path.isdir(folder):
@@ -103,7 +129,7 @@ def convert_single_image(input_file, new_ext):
 
     except Exception as e:
         print("Error converting image:", e)
-    
+
 
 def convert_image_sequence(folder, new_ext):
     print("Pycoder - Converting your image sequence...")
@@ -177,6 +203,7 @@ def create_mp4():
 
 def img_convert():
     print("=== Pycoder - Image Format Converter ===")
+    file_select()
 
     path = input("Enter a file or folder path to convert: ").strip()
     input_type = detect_input_type(path)
