@@ -69,12 +69,14 @@ def detect_input_type(path):
     if os.path.isdir(path):
         pngs = glob.glob(os.path.join(path, "*.png"))
         exrs = glob.glob(os.path.join(path, "*.exr"))
-        if len(pngs) > 0 or len(exrs) > 0:
+        jpgs = glob.glob(os.path.join(path, "*.jpg")) + glob.glob(os.path.join(path, "*.jpeg"))
+        if len(pngs) > 0 or len(exrs) > 0 or len(jpgs) > 0:
             return "sequence"
         else:
             return "empty_folder"
     else:
-        if path.lower().endswith(".png") or path.lower().endswith(".exr"):
+        if path.lower().endswith(".png") or path.lower().endswith(".exr") or \
+           path.lower().endswith(".jpg") or path.lower().endswith(".jpeg"):
             return "single_file"
         else:
             return "unknown_file"
@@ -106,9 +108,12 @@ def convert_single_image(input_file, new_ext):
 def convert_image_sequence(folder, new_ext):
     print("Pycoder - Converting your image sequence...")
     files = sorted(glob.glob(os.path.join(folder, "*.png"))) + \
-            sorted(glob.glob(os.path.join(folder, "*.exr")))
+            sorted(glob.glob(os.path.join(folder, "*.exr"))) + \
+            sorted(glob.glob(os.path.join(folder, "*.jpg"))) + \
+            sorted(glob.glob(os.path.join(folder, "*.jpeg")))
+
     if len(files) == 0:
-        print("No PNG or EXR images found to convert.")
+        print("No PNG, EXR, or JPG images found to convert.")
         return
     out_folder = os.path.join(folder, "pycoder_" + new_ext + "_conversion")
     if not os.path.exists(out_folder):
@@ -176,9 +181,8 @@ def img_convert():
     path = input("Enter a file or folder path to convert: ").strip()
     input_type = detect_input_type(path)
     new_ext = input("Set converted file format:").strip().lower()
-    print(new_ext)
-    if new_ext != "png" and new_ext != "exr":
-        print("Invalid choice. File format must be png or exr.")
+    if new_ext not in ["png", "exr", "jpg"]:
+        print("Invalid choice. File format must be png, exr, or jpg.")
         return
     
     if input_type == "single_file":
@@ -191,8 +195,8 @@ def main():
     if len(sys.argv) < 2:
         print("Usage: python pycoder.py <command>")
         print("Commands:")
-        print("   create_mp4   - Turn a PNG sequence into an MP4 video")
-        print("   img_convert  - Convert PNG <-> EXR file or sequence")
+        print("   create_mp4   - Turn an image sequence into an MP4 video")
+        print("   img_convert  - Convert between PNG, JPG, and EXR images")
         return
     command = sys.argv[1]
     if command == "create_mp4":
