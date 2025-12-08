@@ -3,41 +3,25 @@ import glob
 import sys
 from moviepy import ImageSequenceClip
 import OpenImageIO as oiio
-import pygame
+import tkinter as tk
+from tkinter import filedialog
 
-
-def file_select():
-    pygame.init()
-    screen = pygame.display.set_mode((500, 300))
-    pygame.display.set_caption("Select File or Folder")
-    font = pygame.font.SysFont("Arial", 28)
-    text = font.render("Select File or Folder", True, (255, 255, 255))
-    folder_rect = pygame.Rect(200, 140, 100, 70)
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                    running = False
-        screen.fill((40, 40, 40))
-        screen.blit(text, (130, 60))
-        pygame.draw.rect(screen, (255, 200, 0), folder_rect, border_radius=8)
-        pygame.draw.rect(screen, (180, 150, 0), (folder_rect.x, folder_rect.y - 20, 60, 20), border_radius=5)
-        pygame.display.flip()
-    pygame.quit()
+def browse_folder():
+    root = tk.Tk()
+    root.withdraw()
+    folder = filedialog.askdirectory()
+    root.destroy()
+    return folder
+# -----------------------------
 
 
 def ask_for_inputs():
     print("=== Pycoder: Image Sequence to MP4 Converter ===")
-    file_select()
-
-    folder = input("Enter the folder path of the image sequence: ").strip()
-    if not os.path.isdir(folder):
+    print("Select the folder with the image sequence.")
+    folder = browse_folder()
+    if not folder or not os.path.isdir(folder):
         print("Error: That folder doesn't exist.")
         return None, None, None
-
     while True:
         fps_input = input("Set MP4 frames per second (FPS): ").strip()
         try:
@@ -188,7 +172,7 @@ def create_mp4():
     if len(exrs) > 0 and len(pngs) == 0:
         print("EXR image sequence found. Converting EXR to PNG for MP4 compatability")
         temp_png_folder = convert_image_sequence(folder, "png")
-        
+
         png_files = load_png_sequence(temp_png_folder)
         output_path = os.path.join(folder, file_name)
         build_mp4(png_files, fps, output_path)
@@ -203,19 +187,24 @@ def create_mp4():
 
 def img_convert():
     print("=== Pycoder - Image Format Converter ===")
-    file_select()
+    print("Select the folder to convert.")
 
-    path = input("Enter a file or folder path to convert: ").strip()
+    path = browse_folder()
+    if not path:
+        print("No folder selected.")
+        return
     input_type = detect_input_type(path)
     new_ext = input("Set converted file format:").strip().lower()
     if new_ext not in ["png", "exr", "jpg"]:
         print("Invalid choice. File format must be png, exr, or jpg.")
         return
-    
+
     if input_type == "single_file":
         convert_single_image(path, new_ext)
     elif input_type == "sequence":
         convert_image_sequence(path, new_ext)
+    else:
+        print("No images found in folder.")
 
 
 def main():
