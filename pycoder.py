@@ -12,7 +12,40 @@ def browse_folder():
     folder = filedialog.askdirectory()
     root.destroy()
     return folder
-# -----------------------------
+
+
+def browse_file():
+    root = tk.Tk()
+    root.withdraw()
+    file_path = filedialog.askopenfilename()
+    root.destroy()
+    return file_path
+
+
+def choose_file_or_folder():
+    choice = {"result": None}
+
+    def pick_file():
+        choice["result"] = "file"
+        win.destroy()
+
+    def pick_folder():
+        choice["result"] = "folder"
+        win.destroy()
+
+    win = tk.Tk()
+    win.title("Pycoder - Choose Option")
+    win.geometry("250x120")
+    label = tk.Label(win, text="Convert a file or a folder?")
+    label.pack(pady=10)
+    
+    btn_file = tk.Button(win, text="Convert File", command=pick_file, width=15)
+    btn_file.pack(pady=5)
+    btn_folder = tk.Button(win, text="Convert Folder", command=pick_folder, width=15)
+    btn_folder.pack(pady=5)
+
+    win.mainloop()
+    return choice["result"]
 
 
 def ask_for_inputs():
@@ -182,16 +215,21 @@ def create_mp4():
         return
 
     output_path = os.path.join(folder, file_name)
-    build_mp4(png_files, fps, output_path)
+    build_mp4(pngs, fps, output_path)
 
 
 def img_convert():
     print("=== Pycoder - Image Format Converter ===")
-    print("Select the folder to convert.")
+    print("Pycoder Window - Select whether to convert single file or entire folder.")
+    
+    user_choice = choose_file_or_folder()
+    if user_choice == "file":
+        path = browse_file()
+    else:
+        path = browse_folder()
 
-    path = browse_folder()
     if not path:
-        print("No folder selected.")
+        print("Nothing was selected.")
         return
     input_type = detect_input_type(path)
     new_ext = input("Set converted file format:").strip().lower()
