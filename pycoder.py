@@ -5,9 +5,9 @@ from moviepy import ImageSequenceClip
 import OpenImageIO as oiio
 
 def ask_for_inputs():
-    print("=== Pycoder: PNG Sequence to MP4 Converter ===")
+    print("=== Pycoder: Image Sequence to MP4 Converter ===")
 
-    folder = input("Enter the folder path of the PNG sequence: ").strip()
+    folder = input("Enter the folder path of the image sequence: ").strip()
     if not os.path.isdir(folder):
         print("Error: That folder doesn't exist.")
         return None, None, None
@@ -47,22 +47,22 @@ def build_mp4(png_files, fps, output_path):
     clip.write_videofile(output_path, codec="libx264")
 
     print("\n------------------------------")
-    print("Pycoder - PNG sequence to MP4 successfully created!")
+    print("Pycoder - Image sequence to MP4 successfully created!")
     print("Saved as:", output_path)
     print("------------------------------\n")
 
 
-def create_mp4():
-    folder, fps, file_name = ask_for_inputs()
-    if not folder:
-        return
-
-    png_files = load_png_sequence(folder)
-    if not png_files:
-        return
-
-    output_path = os.path.join(folder, file_name)
-    build_mp4(png_files, fps, output_path)
+def delete_folder(folder):
+    if os.path.exists(folder):
+        for image in glob.glob(os.path.join(folder, "*")):
+            try:
+                os.remove(image)
+            except:
+                pass
+        try:
+            os.rmdir(folder)
+        except:
+            pass
 
 
 def detect_input_type(path):
@@ -142,6 +142,33 @@ def convert_image_sequence(folder, new_ext):
     print("Pycoder - Image conversion successful!")
     print("Saved as:", out_folder)
     print("------------------------------\n")
+
+    return out_folder
+
+
+def create_mp4():
+    folder, fps, file_name = ask_for_inputs()
+    if not folder:
+        return
+
+    pngs = sorted(glob.glob(os.path.join(folder, "*.png")))
+    exrs = sorted(glob.glob(os.path.join(folder, "*.exr")))
+
+    if len(exrs) > 0 and len(pngs) == 0:
+        print("EXR image sequence found. Converting EXR to PNG for MP4 compatability")
+        temp_png_folder = convert_image_sequence(folder, "png")
+        
+        png_files = load_png_sequence(temp_png_folder)
+        output_path = os.path.join(folder, file_name)
+        build_mp4(png_files, fps, output_path)
+        print("Cleaning up file conversion...")
+        delete_folder(temp_png_folder)
+        print("Pycoder - File conversion complete!.\n")
+        return
+
+    output_path = os.path.join(folder, file_name)
+    build_mp4(png_files, fps, output_path)
+
 
 def img_convert():
     print("=== Pycoder - Image Format Converter ===")
