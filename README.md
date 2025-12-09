@@ -15,3 +15,6 @@ Pycoder is a lightweight media encoding and conversion tool written in Python. T
 - Convert single images between PNG, EXR, and JPG
 - Convert entire image sequences from one format to another
 - Encode PNG and EXR image sequences as MP4 files
+
+## Important
+This script will not work on VS Code in my tests. Use Powershell or equivalent.
