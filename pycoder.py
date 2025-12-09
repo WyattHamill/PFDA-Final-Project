@@ -85,7 +85,7 @@ def load_png_sequence(folder):
 
 
 def build_mp4(png_files, fps, output_path):
-    print("Pycoder - Creating your MP4...")
+    print("\nPycoder - Creating your MP4...")
     clip = ImageSequenceClip(png_files, fps=fps)
     clip.write_videofile(output_path, codec="libx264")
 
@@ -181,7 +181,7 @@ def convert_image_sequence(folder, new_ext):
             out.write_image(pixels)
             out.close()
 
-            print("Converted:", sequence, "->", out_path)
+            print("Converted:", base, "->", new_ext)
 
         except Exception as e:
             print("Error converting", sequence, "-", e)
@@ -246,20 +246,25 @@ def img_convert():
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: python pycoder.py <command>")
-        print("Commands:")
-        print("   create_mp4   - Turn an image sequence into an MP4 video")
-        print("   img_convert  - Convert between PNG, JPG, and EXR images")
-        return
-    command = sys.argv[1]
-    if command == "create_mp4":
-        create_mp4()
-    elif command == "img_convert" or "image_convert":
-        img_convert()
-    else:
-        print("Unknown command:", command)
-        print("Available commands: create_mp4, img_convert")
+    print("=== Pycoder - Media Encoding and Conversion ===")
+
+    while True:
+        print("\nConversion tool selection index:")
+        print("1) Create MP4 - Image sequence to MP4")
+        print("2) Image Convert - Convert between PNG, EXR, and JPG")
+        print("q) Quit\n")
+
+        choice = input("Select tool number: ").strip().lower()
+
+        if choice == "1":
+            create_mp4()
+        elif choice == "2":
+            img_convert()
+        elif choice == "q":
+            print("Thanks for using Pycoder!")
+            break
+        else:
+            print("Invalid choice. Please enter a valid tool number. (q to quit)")
 
 
 if __name__ == "__main__":
